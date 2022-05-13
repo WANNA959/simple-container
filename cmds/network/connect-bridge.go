@@ -10,6 +10,8 @@ import (
 var connectBridgeTemplate = template.Must(template.New("simple-container controller connectBridge").Parse(`
 ------------------------------------------------
 simple-container controller:
+    master bridge name: {{.BridgeName}}
+    master bridge subnet: {{.BridgeSubnet}}
     netns name: {{.Name}}
     netns subnet: {{.Subnet}}
 ------------------------------------------------
@@ -59,15 +61,23 @@ func connectBridge(ctx *cli.Context) error {
 		return err
 	}
 
+	bridgeSubnet, err := network.GetBridgeSubnet(subnet)
+	if err != nil {
+		return err
+	}
 	data := struct {
-		Name   string
-		Subnet string
+		BridgeName   string
+		BridgeSubnet string
+		Name         string
+		Subnet       string
 	}{
-		Name:   name,
-		Subnet: subnet,
+		BridgeName:   network.DefaultMasterBridge,
+		BridgeSubnet: bridgeSubnet,
+		Name:         name,
+		Subnet:       subnet,
 	}
 
-	createNetnsTemplate.Execute(os.Stdout, &data)
+	connectBridgeTemplate.Execute(os.Stdout, &data)
 
 	return nil
 }

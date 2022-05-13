@@ -107,7 +107,7 @@ func judgeNicExsit(masterBridge string) (bool, error) {
 	return false, nil
 }
 
-func getBridgeSubnet(subnet string) (string, error) {
+func GetBridgeSubnet(subnet string) (string, error) {
 	_, ipNet, err := net.ParseCIDR(subnet)
 	if err != nil {
 		return "", err
@@ -122,7 +122,7 @@ func getBridgeSubnet(subnet string) (string, error) {
 }
 
 func GenerateBridgeOrSkip(subnet string) error {
-	bridgeSubnet, err := getBridgeSubnet(subnet)
+	bridgeSubnet, err := GetBridgeSubnet(subnet)
 	if err != nil {
 		return err
 	}

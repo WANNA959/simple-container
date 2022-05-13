@@ -83,6 +83,14 @@ simple-container controller:
 ```shell
 $ ./scadm connect-bridge --name=netns1 --subnet=10.99.2.2/24
 $ ./scadm connect-bridge --name=netns2 --subnet=10.99.2.3/24
+
+------------------------------------------------
+simple-container controller:
+    master bridge name: master-br0
+    master bridge subnet: 10.99.2.1/24
+    netns name: netns2
+    netns subnet: 10.99.2.3/24
+------------------------------------------------
 ```
 
 - host bridge
