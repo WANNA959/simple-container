@@ -42,7 +42,7 @@ func NewConnectPairCommand() *cli.Command {
 			&cli.StringFlag{
 				Name:        "subnets",
 				Usage:       "subnets of netns",
-				Destination: &subnet,
+				Destination: &subnets,
 			},
 		},
 	}

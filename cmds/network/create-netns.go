@@ -2,6 +2,7 @@ package network
 
 import (
 	"github.com/urfave/cli/v2"
+	"log"
 	"os"
 	"simple-container/pkg/network"
 	"text/template"
@@ -36,6 +37,7 @@ func NewCreateNetnsCommand() *cli.Command {
 func createNetns(ctx *cli.Context) error {
 
 	if err := network.AddNetns(name); err != nil {
+		log.Fatalln(err)
 		return err
 	}
 
