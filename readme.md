@@ -11,6 +11,8 @@ cp scadm /usr/sbin/
 
 ## usage
 
+### help
+
 ```shell
 $ ./scadm -h
 
@@ -40,9 +42,9 @@ GLOBAL OPTIONS:
    --version, -v     print the version (default: false)
 ```
 
+### Network
 
-
-### Create veth pair
+#### Create veth pair
 
 ```shell
 $ ./scadm create-netns --name=netns1
@@ -74,15 +76,15 @@ simple-container controller:
 ------------------------------------------------
 ```
 
-![image-20220513214223391](/Users/zhujianxing/GoLandProjects/simple-container/images/image-20220513214223391.png)
+![image-20220513214223391](https://tva1.sinaimg.cn/large/e6c9d24ely1h289xb089pj21080n6jvs.jpg)
 
-### Create bridge connect
+#### Create bridge connect
 
 > assign ip for bridge+netns
 
 ```shell
-$ ./scadm connect-bridge --name=netns1 --subnet=10.99.2.2/24
-$ ./scadm connect-bridge --name=netns2 --subnet=10.99.2.3/24
+$ ./scadm connect-bridge --name=netns1 --subnet=10.0.2.2/24
+$ ./scadm connect-bridge --name=netns2 --subnet=10.0.2.3/24
 
 ------------------------------------------------
 simple-container controller:
@@ -95,12 +97,12 @@ simple-container controller:
 
 - host bridge
 
-![image-20220513223642186](/Users/zhujianxing/GoLandProjects/simple-container/images/image-20220513223642186.png)
+![image-20220513223642186](https://tva1.sinaimg.cn/large/e6c9d24ely1h289xbfnk5j213c0sqwk5.jpg)
 
 - Host vs netns1
 
-![image-20220513223540694](/Users/zhujianxing/GoLandProjects/simple-container/images/image-20220513223540694.png)
+![image-20220513223540694](https://tva1.sinaimg.cn/large/e6c9d24ely1h289xh2pyhj21300k6adw.jpg)
 
 - netns1 vs netns2
 
-![image-20220513223621075](/Users/zhujianxing/GoLandProjects/simple-container/images/image-20220513223621075.png)
+![image-20220513223621075](https://tva1.sinaimg.cn/large/e6c9d24ely1h289xdbwvlj213q0lcjvo.jpg)

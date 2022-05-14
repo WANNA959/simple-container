@@ -71,7 +71,7 @@ func AssignIpAndUp(name, subnet, iface string) error {
 	}
 
 	// interface up
-	scmd = fmt.Sprintf("ip netns exec %s ip link set %s up", name, iface)
+	scmd = fmt.Sprintf("ip netns exec %s ip link set lo up; ip netns exec %s ip link set %s up", name, name, iface)
 	cmd = exec.Command("bash", "-c", scmd)
 	log.Printf("exec command: %s", scmd)
 	err = cmd.Run()
