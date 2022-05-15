@@ -5,15 +5,22 @@ import (
 	"github.com/urfave/cli/v2"
 	"os"
 	"simple-container/cmds"
+	"simple-container/cmds/cgroups"
 	"simple-container/cmds/network"
 )
 
 func main() {
 	app := cmds.NewApp()
 	app.Commands = []*cli.Command{
+		// network namespace related
 		network.NewCreateNetnsCommand(),
 		network.NewConnectPairCommand(),
 		network.NewConnectBridgeCommand(),
+		network.NewDeleteNetnsCommand(),
+		// cgroup related
+		cgroups.NewCreateCgroupCommand(),
+		cgroups.NewDeleteCgroupCommand(),
+		cgroups.NewSetCgroupCommand(),
 	}
 
 	if err := app.Run(os.Args); err != nil {

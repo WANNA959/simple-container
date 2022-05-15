@@ -3,6 +3,7 @@ module simple-container
 go 1.17
 
 require (
+	github.com/PaulXu-cn/goeval v0.1.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/urfave/cli/v2 v2.6.0
 )

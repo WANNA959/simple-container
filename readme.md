@@ -29,6 +29,10 @@ COMMANDS:
    create-netns    create network namespace
    connect-pair    connect two netns with veth pair
    connect-bridge  connect to host bridge
+   delete-netns    delete network namespace
+   create-cgroup   create cgroup
+   delete-cgroup   delete cgroup
+   set-cgroup      set cgroup limits
    help, h         Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
@@ -40,6 +44,19 @@ GLOBAL OPTIONS:
    --key value       client key filepath of network grpc server (default: "/root/.litekube/nc/certs/grpc/client-key.pem")
    --help, -h        show help (default: false)
    --version, -v     print the version (default: false)
+  
+  
+  
+$ ./scadm create-netns -h
+NAME:
+   scadm create-netns - create network namespace
+
+USAGE:
+   scadm [global options] create-netns [options]
+
+OPTIONS:
+   --name value  name of netns
+   --help, -h    show help (default: false)
 ```
 
 ### Network

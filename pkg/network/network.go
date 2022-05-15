@@ -7,6 +7,8 @@ import (
 	"log"
 	"net"
 	"os/exec"
+	"path/filepath"
+	"simple-container/pkg/utils"
 	"strings"
 )
 
@@ -15,8 +17,24 @@ const (
 	DefaultMasterBridge = "master-br0"
 )
 
+func NetnsExist(name string) bool {
+	netnsPath := filepath.Join("/var/run/netns/", name)
+	return utils.Exists(netnsPath)
+}
+
 func AddNetns(name string) error {
 	scmd := fmt.Sprintf("ip netns add %s", name)
+	cmd := exec.Command("bash", "-c", scmd)
+	log.Printf("exec command: %s", scmd)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteNetns(name string) error {
+	scmd := fmt.Sprintf("ip netns delete %s", name)
 	cmd := exec.Command("bash", "-c", scmd)
 	log.Printf("exec command: %s", scmd)
 	err := cmd.Run()

@@ -45,6 +45,11 @@ func connectBridge(ctx *cli.Context) error {
 		return err
 	}
 
+	// pre-check netns, if not exist, create it
+	if !network.NetnsExist(name) {
+		network.AddNetns(name)
+	}
+
 	// create veth pair
 	vethPairs, err := network.CraeteVethPair("", "")
 	if err != nil {
