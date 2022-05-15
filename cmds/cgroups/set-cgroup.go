@@ -3,7 +3,7 @@ package cgroups
 import (
 	"github.com/urfave/cli/v2"
 	"os"
-	"simple-container/pkg/cgroups"
+	"simple-container/pkg/cgroups/subsystems"
 	"strings"
 	"text/template"
 )
@@ -42,8 +42,9 @@ func NewSetCgroupCommand() *cli.Command {
 func setCgroup(ctx *cli.Context) error {
 
 	// pre-check
-	if _, err := cgroups.FindCgroupPath(name); err != nil {
-		cgroups.CreateCgroup(name)
+	if _, err := subsystems.FindCgroupPath(name); err != nil {
+		subsystems.CreateCgroup(name)
+
 	}
 
 	splits := strings.Split(limits, ",")
@@ -51,13 +52,13 @@ func setCgroup(ctx *cli.Context) error {
 	for i := 0; i < len(splits); i++ {
 		kv := strings.SplitN(splits[i], "=", 2)
 		cName := strings.SplitN(name, ":", 2)[1]
-		err := cgroups.SetCgroupLimit(kv[0], kv[1], cName)
+		err := subsystems.SetCgroupLimit(kv[0], kv[1], cName)
 		if err != nil {
 			return err
 		}
 	}
 
-	path, err := cgroups.FindCgroupPath(name)
+	path, err := subsystems.FindCgroupPath(name)
 	if err != nil {
 		return err
 	}

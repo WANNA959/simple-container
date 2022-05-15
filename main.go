@@ -12,6 +12,8 @@ import (
 func main() {
 	app := cmds.NewApp()
 	app.Commands = []*cli.Command{
+		// run container
+		cmds.NewRunCommand(),
 		// network namespace related
 		network.NewCreateNetnsCommand(),
 		network.NewConnectPairCommand(),

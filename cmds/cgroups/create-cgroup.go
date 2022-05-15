@@ -4,7 +4,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
-	"simple-container/pkg/cgroups"
+	"simple-container/pkg/cgroups/subsystems"
 	"text/template"
 )
 
@@ -35,12 +35,12 @@ func NewCreateCgroupCommand() *cli.Command {
 
 func createCgroup(ctx *cli.Context) error {
 
-	if err := cgroups.CreateCgroup(name); err != nil {
+	if err := subsystems.CreateCgroup(name); err != nil {
 		log.Fatalln(err)
 		return err
 	}
 
-	path, err := cgroups.FindCgroupPath(name)
+	path, err := subsystems.FindCgroupPath(name)
 	if err != nil {
 		return err
 	}

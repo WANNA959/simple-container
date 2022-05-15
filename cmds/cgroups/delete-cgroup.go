@@ -3,7 +3,7 @@ package cgroups
 import (
 	"github.com/urfave/cli/v2"
 	"log"
-	"simple-container/pkg/cgroups"
+	"simple-container/pkg/cgroups/subsystems"
 )
 
 func NewDeleteCgroupCommand() *cli.Command {
@@ -24,7 +24,7 @@ func NewDeleteCgroupCommand() *cli.Command {
 
 func deleteCgroup(ctx *cli.Context) error {
 
-	if err := cgroups.DeleteCgroup(name); err != nil {
+	if err := subsystems.DeleteCgroup(name); err != nil {
 		log.Fatalln(err)
 		return err
 	}
