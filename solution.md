@@ -55,17 +55,17 @@ ip addr
 
 - 能够实现同一操作系统两个容器之间的网络通信
 
-![image-20220516140501742](/Users/zhujianxing/GoLandProjects/simple-container/images/image-20220516140501742.png)
+![image-20220516140501742](https://tva1.sinaimg.cn/large/e6c9d24egy1h2a8h30gghj218b0u0jxe.jpg)
 
-![image-20220516140544819](/Users/zhujianxing/GoLandProjects/simple-container/images/image-20220516140544819.png)
+![image-20220516140544819](https://tva1.sinaimg.cn/large/e6c9d24egy1h2a8h5xrufj21iv0u0450.jpg)
 
 - 能够为容器分配定量的CPU和内存资源
 
 > 不同container的cgroup
 
-![image-20220516141754766](/Users/zhujianxing/GoLandProjects/simple-container/images/image-20220516141754766.png)
+![image-20220516141754766](https://tva1.sinaimg.cn/large/e6c9d24egy1h2a8hayjhbj21yg0dy78y.jpg)
 
 > demo
 
-![image-20220516142001883](/Users/zhujianxing/GoLandProjects/simple-container/images/image-20220516142001883.png)
+![image-20220516142001883](https://tva1.sinaimg.cn/large/e6c9d24egy1h2a8hdu7kjj21tu0m8qa7.jpg)
 
