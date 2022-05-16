@@ -47,6 +47,7 @@ $ ./scadm --version
 scadm version 0.1.0
 go version go1.17.6
 
+
 $ ./scadm create-netns -h
 NAME:
    scadm create-netns - create network namespace
@@ -102,6 +103,7 @@ simple-container controller:
 ```shell
 $ ./scadm connect-bridge --name=netns1 --subnet=10.0.2.2/24
 $ ./scadm connect-bridge --name=netns2 --subnet=10.0.2.3/24
+$ ./scadm connect-bridge --name=netns3 --subnet=10.0.2.4/24
 
 ------------------------------------------------
 simple-container controller:
@@ -123,3 +125,21 @@ simple-container controller:
 - netns1 vs netns2
 
 ![image-20220513223621075](https://tva1.sinaimg.cn/large/e6c9d24ely1h289xdbwvlj213q0lcjvo.jpg)
+
+### Cgroups
+
+```shell
+create-cgroup
+delete-cgroup
+set-cgroup
+```
+
+### Container
+
+```shell
+$ ./scadm run -it --net=netns3 --limits=cpu.shares=512,cpu.cfs_quota_us=10000,memory.limit_in_bytes=2097152 
+```
+
+## Solution
+
+[solution for course report](./sulution.md)

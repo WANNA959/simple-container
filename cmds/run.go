@@ -10,6 +10,7 @@ import (
 
 var tty bool
 var limits string
+var net string
 
 func NewRunCommand() *cli.Command {
 	return &cli.Command{
@@ -27,6 +28,11 @@ func NewRunCommand() *cli.Command {
 				Name:        "limits",
 				Usage:       "cpu and memory limit",
 				Destination: &limits,
+			},
+			&cli.StringFlag{
+				Name:        "net",
+				Usage:       "network namespace name",
+				Destination: &net,
 			},
 		},
 	}
@@ -48,7 +54,7 @@ func runWithCommand(ctx *cli.Context) error {
 		CpuLimits:    cpuLimitsMap,
 		MemoryLimits: memoryLimitsMap,
 	}
-	if err := container.RunWithCommand(tty, resConf); err != nil {
+	if err := container.RunWithCommand(tty, resConf, net); err != nil {
 		log.Fatalln(err)
 		return err
 	}

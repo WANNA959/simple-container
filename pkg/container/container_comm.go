@@ -7,10 +7,12 @@ import (
 	"os/exec"
 	"simple-container/pkg/cgroups"
 	"simple-container/pkg/cgroups/subsystems"
+	"simple-container/pkg/utils"
+	"time"
 )
 
-func RunWithCommand(tty bool, res *subsystems.ResourceConfig) error {
-	scmd := fmt.Sprintf("unshare --ipc --user --uts --net=/var/run/netns/netns3 --mount --root /root/cloud/centos/ --pid --mount-proc --fork bash")
+func RunWithCommand(tty bool, res *subsystems.ResourceConfig, net string) error {
+	scmd := fmt.Sprintf("unshare --ipc --user --uts --net=/var/run/netns/%s --mount --root /root/cloud/centos/ --pid --mount-proc --fork bash", net)
 	cmd := exec.Command("bash", "-c", scmd)
 	log.Printf("exec command: %s\n", scmd)
 	if tty {
@@ -19,17 +21,25 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig) error {
 		cmd.Stderr = os.Stderr
 	}
 	// no blocked(vs Run) return directly
-	err := cmd.Start()
-	if err != nil {
+	if err := cmd.Start(); err != nil {
 		log.Println(err)
 		return err
 	}
 
+	time.Sleep(5 * time.Millisecond)
+	// set uid & gid
+	childPid := cmd.Process.Pid
+	if err := utils.SetUserNsId(childPid); err != nil {
+		log.Println(err)
+		//return err
+	}
+
 	// cgroups
-	cgroupManager := cgroups.NewCgroupManager("sc-cgroup")
+	cgroupName := fmt.Sprintf("sc-cgroup-%d", childPid)
+	cgroupManager := cgroups.NewCgroupManager(cgroupName)
 	defer cgroupManager.Destroy()
 	cgroupManager.Set(res)
-	cgroupManager.Apply(cmd.Process.Pid)
+	cgroupManager.Apply(childPid)
 
 	cmd.Wait()
 	return nil

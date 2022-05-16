@@ -9,12 +9,6 @@ import (
 )
 
 type AccessConfig struct {
-	ip            string
-	port          string
-	bootStrapPort string
-	CAFile        string
-	CertFile      string
-	KeyFile       string
 }
 
 var GlobalConfig AccessConfig
