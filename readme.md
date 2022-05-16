@@ -142,4 +142,4 @@ $ ./scadm run -it --net=netns3 --limits=cpu.shares=512,cpu.cfs_quota_us=10000,me
 
 ## Solution
 
-[solution for course report](./sulution.md)
+[solution for course report](./solution.md)
