@@ -69,3 +69,11 @@ ip addr
 
 ![image-20220516142001883](https://tva1.sinaimg.cn/large/e6c9d24egy1h2a8hdu7kjj21tu0m8qa7.jpg)
 
+## todo
+- 状态记录（如内存记录subnet ip分配）
+  - 轻量级db持久化（如sqlite3）
+- 实现类似docker network资源(持久化资源)
+  - 容器创建时加入默认的bridge（docker0） or 手动指定network后自动加入bridge网段，无需创建容器后再搭建bridge
+- 功能增强
+  - docker ps
+  - ...

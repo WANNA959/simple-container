@@ -1,4 +1,4 @@
-# ncadm
+# scadm
 
 scadm, a commond-line tool to control simple-container
 
