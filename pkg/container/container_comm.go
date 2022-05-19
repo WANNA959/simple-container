@@ -11,6 +11,14 @@ import (
 	"time"
 )
 
+type ContainerInfo struct {
+	Pid         string `json:"pid"` //容器init进程在宿主机的PID
+	Name        string `json:"name"`
+	Command     string `json:"command"` //容器init的运行命令
+	CreatedTime string `json:"createdTime"`
+	Status      string `json:"status"`
+}
+
 func RunWithCommand(tty bool, res *subsystems.ResourceConfig, net string) error {
 	scmd := fmt.Sprintf("unshare --ipc --user --uts --net=/var/run/netns/%s --mount --root /root/cloud/centos/ --pid --mount-proc --fork bash", net)
 	cmd := exec.Command("bash", "-c", scmd)

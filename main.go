@@ -6,6 +6,7 @@ import (
 	"os"
 	"simple-container/cmds"
 	"simple-container/cmds/cgroups"
+	"simple-container/cmds/container"
 	"simple-container/cmds/network"
 )
 
@@ -13,7 +14,8 @@ func main() {
 	app := cmds.NewApp()
 	app.Commands = []*cli.Command{
 		// run container
-		cmds.NewRunCommand(),
+		container.NewRunCommand(),
+		container.NeListCommand(),
 		// network namespace related
 		network.NewCreateNetnsCommand(),
 		network.NewConnectPairCommand(),
