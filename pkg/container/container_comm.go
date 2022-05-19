@@ -52,3 +52,15 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, net string) error 
 	cmd.Wait()
 	return nil
 }
+
+func GetContainerInfo(pid string) *ContainerInfo {
+	startTime, _ := utils.ProcessStartTime(pid)
+	container := &ContainerInfo{
+		Pid:         pid,
+		Name:        "",
+		Command:     utils.ProcessComm(pid),
+		CreatedTime: startTime,
+		Status:      utils.ProcessStat(pid),
+	}
+	return container
+}

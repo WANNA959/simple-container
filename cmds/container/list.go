@@ -24,7 +24,7 @@ func listContainer(ctx *cli.Context) error {
 	pids := utils.GetAllPid()
 	var containers []*container.ContainerInfo
 	for _, pid := range pids {
-		info := utils.GetContainerInfo(pid)
+		info := container.GetContainerInfo(pid)
 		containers = append(containers, info)
 	}
 
@@ -32,7 +32,7 @@ func listContainer(ctx *cli.Context) error {
 	fmt.Fprint(w, "ID\tPID\tSTATUS\tCOMMAND\tCREATED\n")
 	for idx, item := range containers {
 		fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\n",
-			idx,
+			idx+1,
 			item.Pid,
 			item.Status,
 			item.Command,
