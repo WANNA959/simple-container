@@ -9,6 +9,7 @@ import (
 )
 
 var tty bool
+var containerName string
 var limits string
 var net string
 
@@ -23,6 +24,11 @@ func NewRunCommand() *cli.Command {
 				Name:        "it",
 				Usage:       "enable tty",
 				Destination: &tty,
+			},
+			&cli.StringFlag{
+				Name:        "name",
+				Usage:       "container name",
+				Destination: &containerName,
 			},
 			&cli.StringFlag{
 				Name:        "limits",
@@ -54,7 +60,7 @@ func runWithCommand(ctx *cli.Context) error {
 		CpuLimits:    cpuLimitsMap,
 		MemoryLimits: memoryLimitsMap,
 	}
-	if err := container.RunWithCommand(tty, resConf, net); err != nil {
+	if err := container.RunWithCommand(tty, resConf, containerName, net); err != nil {
 		log.Fatalln(err)
 		return err
 	}

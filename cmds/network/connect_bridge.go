@@ -4,6 +4,7 @@ import (
 	"github.com/urfave/cli/v2"
 	"os"
 	"simple-container/pkg/network"
+	"simple-container/pkg/sqlite"
 	"text/template"
 )
 
@@ -41,7 +42,7 @@ func NewConnectBridgeCommand() *cli.Command {
 func connectBridge(ctx *cli.Context) error {
 
 	// pre-check master bridge
-	if err := network.GenerateBridgeOrSkip(subnet); err != nil {
+	if err := network.GenerateBridgeOrSkip(subnet, network.DefaultMasterBridge); err != nil {
 		return err
 	}
 
@@ -60,13 +61,18 @@ func connectBridge(ctx *cli.Context) error {
 	if err := network.AssignIpAndUp(name, subnet, vethPairs[0]); err != nil {
 		return err
 	}
+	cm := sqlite.ContainerMgr{}
+	cm.Insert(sqlite.ContainerMgr{
+		Pid:  name,
+		Veth: vethPairs[0],
+	})
 
 	// add veth to master bridge
-	if err := network.AddVeth2MasterNic(vethPairs[1]); err != nil {
+	if err := network.AddVeth2BridgeNic(vethPairs[1], network.DefaultMasterBridge); err != nil {
 		return err
 	}
 
-	bridgeSubnet, err := network.GetBridgeSubnet(subnet)
+	bridgeSubnet, err := network.GetBridgeSubnet(subnet, false)
 	if err != nil {
 		return err
 	}

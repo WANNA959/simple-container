@@ -3,19 +3,26 @@ package network
 import (
 	"errors"
 	"fmt"
+	"github.com/mattn/go-sqlite3"
 	uuid "github.com/satori/go.uuid"
 	"log"
 	"net"
 	"os/exec"
 	"path/filepath"
+	"simple-container/pkg/sqlite"
 	"simple-container/pkg/utils"
+	"strconv"
 	"strings"
 )
 
 const (
-	Veth                = "veth"
-	DefaultMasterBridge = "master-br0"
+	Veth                 = "veth"
+	DefaultMasterBridge  = "master-br0"
+	DefaultDocker0Bridge = "sc-br0"
+	DefaultBridgeSubnet  = "10.99.0.1/24"
 )
+
+var PoolFullErr = errors.New("IP Pool Full")
 
 func NetnsExist(name string) bool {
 	netnsPath := filepath.Join("/var/run/netns/", name)
@@ -24,6 +31,17 @@ func NetnsExist(name string) bool {
 
 func AddNetns(name string) error {
 	scmd := fmt.Sprintf("ip netns add %s", name)
+	cmd := exec.Command("bash", "-c", scmd)
+	log.Printf("exec command: %s", scmd)
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteDirNetns(name string) error {
+	scmd := fmt.Sprintf("rm -rf /var/run/netns/%s", name)
 	cmd := exec.Command("bash", "-c", scmd)
 	log.Printf("exec command: %s", scmd)
 	err := cmd.Run()
@@ -100,9 +118,9 @@ func AssignIpAndUp(name, subnet, iface string) error {
 	return nil
 }
 
-func AddVeth2MasterNic(iface string) error {
+func AddVeth2BridgeNic(iface, bridge string) error {
 	// set veth to netns
-	scmd := fmt.Sprintf("ip link set dev %s master %s; ip link set dev %s up", iface, DefaultMasterBridge, iface)
+	scmd := fmt.Sprintf("ip link set dev %s master %s; ip link set dev %s up", iface, bridge, iface)
 	cmd := exec.Command("bash", "-c", scmd)
 	log.Printf("exec command: %s", scmd)
 	err := cmd.Run()
@@ -112,7 +130,7 @@ func AddVeth2MasterNic(iface string) error {
 	return nil
 }
 
-func judgeNicExsit(masterBridge string) (bool, error) {
+func JudgeNicExsit(masterBridge string) (bool, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return false, err
@@ -125,7 +143,7 @@ func judgeNicExsit(masterBridge string) (bool, error) {
 	return false, nil
 }
 
-func GetBridgeSubnet(subnet string) (string, error) {
+func GetBridgeSubnet(subnet string, isBridge bool) (string, error) {
 	_, ipNet, err := net.ParseCIDR(subnet)
 	if err != nil {
 		return "", err
@@ -133,23 +151,23 @@ func GetBridgeSubnet(subnet string) (string, error) {
 	last := int(ipNet.IP[3]) + 1
 	ipNet.IP[3] = byte(last)
 	splits := strings.SplitN(subnet, "/", 2)
-	if splits[0] == ipNet.IP.String() {
+	if !isBridge && splits[0] == ipNet.IP.String() {
 		return "", errors.New(fmt.Sprintf("%s is reserved for bridge", ipNet.IP.String()))
 	}
 	return fmt.Sprintf("%s/%s", ipNet.IP.String(), splits[1]), nil
 }
 
-func GenerateBridgeOrSkip(subnet string) error {
-	bridgeSubnet, err := GetBridgeSubnet(subnet)
+func GenerateBridgeOrSkip(subnet, nicName string) error {
+	bridgeSubnet, err := GetBridgeSubnet(subnet, true)
 	if err != nil {
 		return err
 	}
-	exsit, err := judgeNicExsit(DefaultMasterBridge)
+	exsit, err := JudgeNicExsit(nicName)
 	if err != nil {
 		return err
 	}
 	if !exsit {
-		scmd := fmt.Sprintf("ip link add %s type bridge; ip addr add %s dev %s;  ip link set dev %s up", DefaultMasterBridge, bridgeSubnet, DefaultMasterBridge, DefaultMasterBridge)
+		scmd := fmt.Sprintf("ip link add %s type bridge; ip addr add %s dev %s;  ip link set dev %s up", nicName, bridgeSubnet, nicName, nicName)
 		cmd := exec.Command("bash", "-c", scmd)
 		log.Printf("exec command: %s", scmd)
 		err := cmd.Run()
@@ -158,4 +176,37 @@ func GenerateBridgeOrSkip(subnet string) error {
 		}
 	}
 	return nil
+}
+
+func GetNextIp(subnet string) (string, error) {
+	info := strings.SplitN(subnet, "/", 2)
+	ip := info[0]
+	mask := info[1]
+	nm := sqlite.NetworkMgr{}
+	subnets, err := nm.QueryBySubnet(subnet)
+	if err != nil && err != sqlite3.ErrNotFound {
+		log.Fatalln(err)
+		return "", err
+	}
+	ipMap := make(map[string]bool)
+	for _, item := range subnets {
+		splits := strings.SplitN(item.BindIp, ".", 4)
+		ipMap[splits[3]] = true
+	}
+	for i := 2; i < 254; i++ {
+		stri := strconv.FormatInt(int64(i), 10)
+		if !ipMap[stri] {
+			splits := strings.SplitN(ip, ".", 4)
+			splits[3] = stri
+			newip := strings.Join(splits, ".")
+			nm := sqlite.NetworkMgr{}
+
+			nm.Insert(sqlite.NetworkMgr{
+				Subnet: subnet,
+				BindIp: newip,
+			})
+			return newip + "/" + mask, nil
+		}
+	}
+	return "", PoolFullErr
 }

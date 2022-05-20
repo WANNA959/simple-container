@@ -1,5 +1,7 @@
 # Solution
 
+## 基本要求
+
 ```shell
 # create network namespace
 $ ./scadm create-netns --name=netns1
@@ -69,7 +71,44 @@ ip addr
 
 ![image-20220516142001883](https://tva1.sinaimg.cn/large/e6c9d24egy1h2a8hdu7kjj21tu0m8qa7.jpg)
 
+## 功能增强
+
+> 创建容器无需指定network namespace，自动接入host bridge
+
+```
+# run centos-rootfs-based containers, auto join default bridge sc-br0(ref:docker0, auto assigned ip)
+$ ./scadm run -it --name=centos1 --limits=cpu.shares=256,cpu.cfs_quota_us=10000,memory.limit_in_bytes=2097152 
+
+$ ./scadm run -it --name=centos2 --limits=cpu.shares=512,cpu.cfs_quota_us=20000,memory.limit_in_bytes=4194304 
+```
+
+- host
+
+![image-20220520151747738](https://tva1.sinaimg.cn/large/e6c9d24ely1h2ew8oqx0ij211c0cg40g.jpg)
+
+![image-20220520151732647](https://tva1.sinaimg.cn/large/e6c9d24ely1h2ew7t05d0j20zq0kwadr.jpg)
+
+- centos1
+
+![image-20220520151647576](https://tva1.sinaimg.cn/large/e6c9d24ely1h2ew8j4qhdj20yt0u0dl8.jpg)
+
+- centos2
+
+![image-20220520151605945](https://tva1.sinaimg.cn/large/e6c9d24ely1h2ew61u3q9j211s0tu795.jpg)
+
+> docker ps
+
+```
+$ ./scadm ps
+ID          NAME        PID         STATUS      COMMAND     CREATED
+78326536    centos1     8395        Running     unshare     2022-05-20 14:03:40
+d820bf22    centos2     8345        Running     unshare     2022-05-20 14:03:05
+```
+
+![image-20220520140411177](https://tva1.sinaimg.cn/large/e6c9d24ely1h2eu3vwvynj2148076jsk.jpg)
+
 ## todo
+
 - 状态记录（如内存记录subnet ip分配）
   - 轻量级db持久化（如sqlite3）
 - 实现类似docker network资源(持久化资源)
