@@ -109,10 +109,14 @@ d820bf22    centos2     8345        Running     unshare     2022-05-20 14:03:05
 
 ## todo
 
-- 状态记录（如内存记录subnet ip分配）
+- 状态记录 done
   - 轻量级db持久化（如sqlite3）
-- 实现类似docker network资源(持久化资源)
+- 实现类似docker network资源(持久化资源) done
   - 容器创建时加入默认的bridge（docker0） or 手动指定network后自动加入bridge网段，无需创建容器后再搭建bridge
 - 功能增强
-  - docker ps
+  - docker ps(done)
+  - docker --name(done)
+  - 挂载
+    - docekr -v 
+    - docker images
   - ...
