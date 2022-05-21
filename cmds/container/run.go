@@ -70,11 +70,11 @@ func runWithCommand(ctx *cli.Context) error {
 func run(ctx *cli.Context) error {
 
 	var cmdArray []string
-	//for _, arg := range ctx.Args() {
-	//	cmdArray = append(cmdArray, arg)
-	//}
-	//cmd := context.Args().Get(0)
-
+	args := ctx.Args()
+	for i := 0; i < args.Len(); i++ {
+		cmdArray = append(cmdArray, args.Get(i))
+	}
+	log.Printf("cmdArray:%+v", cmdArray)
 	cpuLimitsMap := make(map[string]string)
 	memoryLimitsMap := make(map[string]string)
 	splits := strings.Split(limits, ",")
@@ -90,7 +90,7 @@ func run(ctx *cli.Context) error {
 		CpuLimits:    cpuLimitsMap,
 		MemoryLimits: memoryLimitsMap,
 	}
-	if err := container.Run(tty, cmdArray, resConf); err != nil {
+	if err := container.Run(tty, cmdArray, resConf, containerName, net); err != nil {
 		log.Fatalln(err)
 		return err
 	}

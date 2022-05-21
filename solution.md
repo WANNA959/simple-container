@@ -83,6 +83,11 @@ $ ./scadm run -it --name=centos2 --limits=cpu.shares=512,cpu.cfs_quota_us=20000,
 ```
 
 - host
+  - simple-container首次启动的时候，默认创建sc-br0虚拟网卡
+  - 使用sqlite轻量级数据库持久化记录sc-br0网段ip分配，确保给各容器分配unique ip
+  - 容器关闭的时候clean工作
+    - 删除对应的netns或是netns软链接
+    - 删除sqlite db中持久化记录
 
 ![image-20220520151747738](https://tva1.sinaimg.cn/large/e6c9d24ely1h2ew8oqx0ij211c0cg40g.jpg)
 
@@ -97,6 +102,14 @@ $ ./scadm run -it --name=centos2 --limits=cpu.shares=512,cpu.cfs_quota_us=20000,
 ![image-20220520151605945](https://tva1.sinaimg.cn/large/e6c9d24ely1h2ew61u3q9j211s0tu795.jpg)
 
 > docker ps
+
+- simple-container首次启动的时候，默认创建/var/run/container
+  - 容器启动时以name为dir，即创建/var/run/container/{containerName}
+    - config.json下存储container metadata（ContainerInfo struct），包含container name、pid、container id、创建时间等
+      - json序列化方式存储到文件中
+  - ./scdm ps命令从/var/run/container下读取各个container的metadata数据
+  - 容器关闭的时候clean工作
+    - 删除对应/var/run/container/{containerName}下的数据
 
 ```
 $ ./scadm ps

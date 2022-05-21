@@ -10,7 +10,7 @@ import (
 	"text/tabwriter"
 )
 
-func NeListCommand() *cli.Command {
+func NewListCommand() *cli.Command {
 	return &cli.Command{
 		Name:      "ps",
 		Usage:     "connect to host bridge",
@@ -20,13 +20,6 @@ func NeListCommand() *cli.Command {
 }
 
 func listContainer(ctx *cli.Context) error {
-
-	//pids := utils.GetAllPid()
-	//var containers []*container.ContainerInfo
-	//for _, pid := range pids {
-	//	info := container.GetContainerInfo(pid)
-	//	containers = append(containers, info)
-	//}
 
 	dirURL := container.DefaultInfoLocation
 	files, err := ioutil.ReadDir(dirURL)

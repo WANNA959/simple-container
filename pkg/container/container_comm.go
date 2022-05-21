@@ -116,7 +116,12 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, containerName, net
 			return err
 		}
 	}
-	cname, err := WriteContainerInfo(containerName, childPid)
+
+	cid := strings.ReplaceAll(uuid.NewV4().String(), "-", "")[:8]
+	if containerName == "" {
+		containerName = cid
+	}
+	err := WriteContainerInfo(cid, containerName, childPid)
 	if err != nil {
 		return err
 	}
@@ -128,20 +133,19 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, containerName, net
 	cgroupManager.Set(res)
 	cgroupManager.Apply(childPid)
 
-	defer clean(netnsName, cname)
+	defer clean(netnsName, containerName)
 	cmd.Wait()
 	return nil
 }
 
-func WriteContainerInfo(containerName string, pid int) (string, error) {
-	id := strings.ReplaceAll(uuid.NewV4().String(), "-", "")[:8]
+func WriteContainerInfo(cid, containerName string, pid int) error {
 	createTime := time.Now().UTC().Add(8 * time.Hour).Format("2006-01-02 15:04:05")
 
 	if containerName == "" {
-		containerName = id
+		containerName = cid
 	}
 	containerInfo := &ContainerInfo{
-		Id:          id,
+		Id:          cid,
 		Pid:         strconv.Itoa(pid),
 		Name:        containerName,
 		Command:     "unshare",
@@ -152,27 +156,27 @@ func WriteContainerInfo(containerName string, pid int) (string, error) {
 	jsonBytes, err := json.Marshal(containerInfo)
 	if err != nil {
 		log.Panicf("Record container info error %v", err)
-		return "", err
+		return err
 	}
 	jsonStr := string(jsonBytes)
 
 	dirUrl := filepath.Join(DefaultInfoLocation, containerName)
 	if err := os.MkdirAll(dirUrl, 0622); err != nil {
 		log.Panicf("Mkdir error %s error %v", dirUrl, err)
-		return "", err
+		return err
 	}
 	fileName := filepath.Join(dirUrl, ConfigName)
 	file, err := os.Create(fileName)
 	defer file.Close()
 	if err != nil {
 		log.Fatalf("Create file %s error %v", fileName, err)
-		return "", err
+		return err
 	}
 	if _, err := file.WriteString(jsonStr); err != nil {
 		log.Fatalf("File write string error %v", err)
-		return "", err
+		return err
 	}
-	return containerName, nil
+	return nil
 }
 
 // use self metadata

@@ -15,7 +15,7 @@ func main() {
 	app.Commands = []*cli.Command{
 		// run container
 		container.NewRunCommand(),
-		container.NeListCommand(),
+		container.NewListCommand(),
 		// network namespace related
 		network.NewCreateNetnsCommand(),
 		network.NewConnectPairCommand(),
