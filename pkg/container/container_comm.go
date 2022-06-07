@@ -35,7 +35,7 @@ const (
 	StateStop           = "Stopped"
 )
 
-func RunWithCommand(tty bool, res *subsystems.ResourceConfig, containerName, net string) error {
+func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerName, imageName, net string) error {
 	var netnsName string
 	flag := false
 	if net != "" {
@@ -63,6 +63,10 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, containerName, net
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
+
+	// mount
+	NewWorkSpace(volume, imageName, containerName)
+
 	// no blocked(vs Run) return directly
 	if err := cmd.Start(); err != nil {
 		log.Println(err)

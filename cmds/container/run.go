@@ -12,6 +12,7 @@ var tty bool
 var containerName string
 var limits string
 var net string
+var volume string
 
 func NewRunCommand() *cli.Command {
 	return &cli.Command{
@@ -31,6 +32,11 @@ func NewRunCommand() *cli.Command {
 				Destination: &containerName,
 			},
 			&cli.StringFlag{
+				Name:        "v",
+				Usage:       "container volumn",
+				Destination: &volume,
+			},
+			&cli.StringFlag{
 				Name:        "limits",
 				Usage:       "cpu and memory limit",
 				Destination: &limits,
@@ -45,6 +51,11 @@ func NewRunCommand() *cli.Command {
 }
 
 func runWithCommand(ctx *cli.Context) error {
+	var cmdArray []string
+	for i := 0; i < ctx.Args().Len(); i++ {
+		cmdArray = append(cmdArray, ctx.Args().Get(i))
+	}
+	imageName := cmdArray[0]
 	cpuLimitsMap := make(map[string]string)
 	memoryLimitsMap := make(map[string]string)
 	splits := strings.Split(limits, ",")
@@ -60,7 +71,7 @@ func runWithCommand(ctx *cli.Context) error {
 		CpuLimits:    cpuLimitsMap,
 		MemoryLimits: memoryLimitsMap,
 	}
-	if err := container.RunWithCommand(tty, resConf, containerName, net); err != nil {
+	if err := container.RunWithCommand(tty, resConf, volume, containerName, imageName, net); err != nil {
 		log.Fatalln(err)
 		return err
 	}
