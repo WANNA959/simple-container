@@ -14,7 +14,7 @@ import (
 	"syscall"
 )
 
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerName, net string) error {
+func Run(tty bool, cmdArrays []string, res *subsystems.ResourceConfig, volume, containerName, imageName, net string) error {
 	cid := strings.ReplaceAll(uuid.NewV4().String(), "-", "")[:8]
 	if containerName == "" {
 		containerName = cid
@@ -87,7 +87,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 		}
 	}
 
-	err := WriteContainerInfo(cid, containerName, childPid)
+	err := WriteContainerInfo(cid, containerName, imageName, volume, childPid)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 	cgroupManager.Set(res)
 	cgroupManager.Apply(parent.Process.Pid)
 
-	sendInitCommand(comArray, writePipe)
+	sendInitCommand(cmdArrays, writePipe)
 	defer clean(netnsName, containerName)
 	parent.Wait()
 	os.Exit(0)

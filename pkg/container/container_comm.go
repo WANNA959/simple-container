@@ -22,8 +22,10 @@ import (
 type ContainerInfo struct {
 	Id          string `json:"id"`
 	Pid         string `json:"pid"`
+	Image       string `json:"image"`
 	Name        string `json:"name"`
 	Command     string `json:"command"`
+	Volume      string `json:"volume"`
 	CreatedTime string `json:"createdTime"`
 	Status      string `json:"status"`
 }
@@ -85,7 +87,6 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 		}
 	}
 
-	fmt.Println("111")
 	// connect to default docker0 bridge
 	if flag {
 		oldns := fmt.Sprintf("/proc/%d/ns/net", childPid)
@@ -121,13 +122,12 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 			return err
 		}
 	}
-	fmt.Println("222")
 
 	cid := strings.ReplaceAll(uuid.NewV4().String(), "-", "")[:8]
 	if containerName == "" {
 		containerName = cid
 	}
-	err := WriteContainerInfo(cid, containerName, childPid)
+	err := WriteContainerInfo(cid, containerName, imageName, volume, childPid)
 	if err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 	return nil
 }
 
-func WriteContainerInfo(cid, containerName string, pid int) error {
+func WriteContainerInfo(cid, containerName, imageName, volume string, pid int) error {
 	createTime := time.Now().UTC().Add(8 * time.Hour).Format("2006-01-02 15:04:05")
 
 	if containerName == "" {
@@ -154,8 +154,10 @@ func WriteContainerInfo(cid, containerName string, pid int) error {
 	containerInfo := &ContainerInfo{
 		Id:          cid,
 		Pid:         strconv.Itoa(pid),
+		Image:       imageName,
 		Name:        containerName,
 		Command:     "unshare",
+		Volume:      volume,
 		CreatedTime: createTime,
 		Status:      StateRunning,
 	}

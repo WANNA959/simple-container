@@ -86,6 +86,7 @@ func run(ctx *cli.Context) error {
 		cmdArray = append(cmdArray, args.Get(i))
 	}
 	log.Printf("cmdArray:%+v", cmdArray)
+	imageName := cmdArray[0]
 	cpuLimitsMap := make(map[string]string)
 	memoryLimitsMap := make(map[string]string)
 	splits := strings.Split(limits, ",")
@@ -101,7 +102,7 @@ func run(ctx *cli.Context) error {
 		CpuLimits:    cpuLimitsMap,
 		MemoryLimits: memoryLimitsMap,
 	}
-	if err := container.Run(tty, cmdArray, resConf, containerName, net); err != nil {
+	if err := container.Run(tty, cmdArray, resConf, volume, containerName, imageName, net); err != nil {
 		log.Fatalln(err)
 		return err
 	}
