@@ -11,11 +11,14 @@ import (
 )
 
 const (
-	RootUrl       string = "/root/.simple-container/images"
-	MntUrl        string = "/root/.simple-container/mnt/"
-	WriteLayerUrl string = "/root/.simple-container/writeLayer"
-	ReadLayerUrl  string = "/root/.simple-container/readLayer"
-	WorkLayerUrl  string = "/root/.simple-container/workLayer"
+	RootUrl             string = "/root/.simple-container/images"
+	MntUrl              string = "/root/.simple-container/mnt/"
+	WriteLayerUrl       string = "/root/.simple-container/writeLayer"
+	ReadLayerUrl        string = "/root/.simple-container/readLayer"
+	WorkLayerUrl        string = "/root/.simple-container/workLayer"
+	VolumeWriteLayerUrl string = "/root/.simple-container/volume/%s/writeLayer"
+	VolumeReadLayerUrl  string = "/root/.simple-container/volume/%s/readLayer"
+	VolumeWorkLayerUrl  string = "/root/.simple-container/volume/%s/workLayer"
 )
 
 // 创建一个Overlay系统作为容器的根目录
@@ -86,7 +89,10 @@ func MountVolume(volumeURLs []string, containerName string) error {
 	if err := os.MkdirAll(parentUrl, 0777); err != nil {
 		log.Printf("Mkdir parent dir %s error. %v", parentUrl, err)
 	}
-	CreateVolumePoint(parentUrl)
+	CreateVolumePoint(parentUrl, containerName)
+	//if len(urls) == 0 {
+	//	return errors.New("fail to create volume point")
+	//}
 
 	// 在容器里创建挂载目录
 	containerUrl := volumeURLs[1]
@@ -97,11 +103,8 @@ func MountVolume(volumeURLs []string, containerName string) error {
 	}
 
 	// 把宿主机文件目录挂载到容器挂载点
-	lower := "lowerdir=" + parentUrl + "/readLayer/"
-	upper := "upperdir=" + parentUrl + "/writeLayer/"
-	work := "workdir=" + parentUrl + "/workLayer/"
-	parm := lower + "," + upper + "," + work
-	_, err := exec.Command("mount", "-t", "overlay", "overlay", "-o", parm, containerVolumeURL).CombinedOutput()
+	dirs := "dirs=" + parentUrl
+	_, err := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", containerVolumeURL).CombinedOutput()
 	if err != nil {
 		log.Fatalf("Mount volume failed. %v", err)
 		return err
@@ -109,23 +112,25 @@ func MountVolume(volumeURLs []string, containerName string) error {
 	return nil
 }
 
-// 创建宿主机挂载卷的read/write.work目录
-func CreateVolumePoint(parentUrl string) {
-	readURL := parentUrl + "/readLayer/"
-	writeURL := parentUrl + "/writeLayer/"
-	workURL := parentUrl + "/workLayer/"
+// 创建宿主机挂载卷的read/writework目录
+func CreateVolumePoint(parentUrl, containerName string) {
 
-	if err := os.MkdirAll(readURL, 0777); err != nil {
-		log.Fatalf("Mkdir dir %s error. %v", readURL, err)
+	if utils.NotExists(parentUrl) {
+		if err := os.MkdirAll(parentUrl, 0777); err != nil {
+			log.Fatalf("Mkdir dir %s error. %v", parentUrl, err)
+		}
 	}
 
-	if err := os.MkdirAll(writeURL, 0777); err != nil {
-		log.Fatalf("Mkdir dir %s error. %v", writeURL, err)
-	}
-
-	if err := os.MkdirAll(workURL, 0777); err != nil {
-		log.Fatalf("Mkdir dir %s error. %v", workURL, err)
-	}
+	//readURL := fmt.Sprintf(VolumeReadLayerUrl, containerName)
+	//writeURL := fmt.Sprintf(VolumeWriteLayerUrl, containerName)
+	//workURL := fmt.Sprintf(VolumeWorkLayerUrl, containerName)
+	//urls := []string{readURL, writeURL, workURL}
+	//for _, url := range urls {
+	//	if err := os.MkdirAll(url, 0777); err != nil {
+	//		log.Fatalf("Mkdir dir %s error. %v", url, err)
+	//		return nil
+	//	}
+	//}
 }
 
 // 创建容器目录
@@ -201,13 +206,14 @@ func DeleteMountPointWithVolume(volumeURLs []string, containerName string) error
 	}
 
 	// 卸载整个容器挂载点
+	_, err = exec.Command("umount", mntURL).CombinedOutput()
 	if err != nil {
 		log.Fatalf("Unmount %s error %v", mntURL, err)
 		return err
 	}
 
-	if err := os.RemoveAll(mntURL); err != nil {
-		log.Fatalf("Remove mountpoint dir %s error %v", mntURL, err)
+	if err := os.RemoveAll(containerUrl); err != nil {
+		log.Fatalf("Remove mountpoint dir %s error %v", containerUrl, err)
 		return err
 	}
 	return nil

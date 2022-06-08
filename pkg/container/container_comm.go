@@ -85,6 +85,7 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 		}
 	}
 
+	fmt.Println("111")
 	// connect to default docker0 bridge
 	if flag {
 		oldns := fmt.Sprintf("/proc/%d/ns/net", childPid)
@@ -120,6 +121,7 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 			return err
 		}
 	}
+	fmt.Println("222")
 
 	cid := strings.ReplaceAll(uuid.NewV4().String(), "-", "")[:8]
 	if containerName == "" {
