@@ -130,13 +130,13 @@ func CreateVolumePoint(parentUrl string) {
 
 // 创建容器目录
 func CreateMountPoint(containerName string, imageName string) error {
-	mntUrl := fmt.Sprintf(MntUrl, containerName)
+	mntUrl := filepath.Join(MntUrl, containerName)
 	if err := os.MkdirAll(mntUrl, 0777); err != nil {
 		log.Fatalf("Mkdir mountpoint dir %s error. %v", mntUrl, err)
 	}
-	tmpReadLayer := fmt.Sprintf(ReadLayerUrl, imageName)
-	tmpWriteLayer := fmt.Sprintf(WriteLayerUrl, containerName)
-	tmpwork := fmt.Sprintf(WorkLayerUrl, containerName)
+	tmpReadLayer := filepath.Join(ReadLayerUrl, imageName)
+	tmpWriteLayer := filepath.Join(WriteLayerUrl, containerName)
+	tmpwork := filepath.Join(WorkLayerUrl, containerName)
 	/*
 		lowerdir read-only
 		upperdir read-write cow
@@ -148,7 +148,10 @@ func CreateMountPoint(containerName string, imageName string) error {
 	work := "workdir=" + tmpwork
 	parm := lower + "," + upper + "," + work
 	//cmd := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mntURL)
+	scmds := fmt.Sprintf("mount -t overlay overlay -o %s %s", parm, mntUrl)
+	log.Printf("exec command:%+v", scmds)
 	_, err := exec.Command("mount", "-t", "overlay", "overlay", "-o", parm, mntUrl).CombinedOutput()
+	//_, err := exec.Command("bash", "-c", scmds).CombinedOutput()
 	if err != nil {
 		log.Fatalf("Run command for creating mount point failed %v", err)
 		return err
@@ -174,8 +177,8 @@ func DeleteWorkSpace(volume string, containerName string) {
 }
 
 func DeleteMountPoint(containerName string) error {
-	mntURL := fmt.Sprintf(MntUrl, containerName)
-	_, err := exec.Command("umount", mntURL).CombinedOutput()
+	mntURL := filepath.Join(MntUrl, containerName)
+	_, err := exec.Command("bash", "-c", "umount "+mntURL).CombinedOutput()
 	if err != nil {
 		log.Fatalf("Unmount %s error %v", mntURL, err)
 		return err
@@ -190,9 +193,9 @@ func DeleteMountPoint(containerName string) error {
 
 func DeleteMountPointWithVolume(volumeURLs []string, containerName string) error {
 	// 卸载容器里的volume挂载点
-	mntURL := fmt.Sprintf(MntUrl, containerName)
+	mntURL := filepath.Join(MntUrl, containerName)
 	containerUrl := mntURL + "/" + volumeURLs[1]
-	_, err := exec.Command("umount", containerUrl).CombinedOutput()
+	_, err := exec.Command("bash", "-c", "umount "+containerUrl).CombinedOutput()
 	if err != nil {
 		log.Fatalf("Umount volume %s failed. %v", containerUrl, err)
 	}
@@ -211,26 +214,15 @@ func DeleteMountPointWithVolume(volumeURLs []string, containerName string) error
 }
 
 func DeleteWriteLayer(containerName string) {
-	writeURL := fmt.Sprintf(WriteLayerUrl, containerName)
+	writeURL := filepath.Join(WriteLayerUrl, containerName)
 	if err := os.RemoveAll(writeURL); err != nil {
 		log.Fatalf("Remove writeLayer dir %s error %v", writeURL, err)
 	}
 }
 
 func DeleteWorkLayer(containerName string) {
-	workURL := fmt.Sprintf(WorkLayerUrl, containerName)
+	workURL := filepath.Join(WorkLayerUrl, containerName)
 	if err := os.RemoveAll(workURL); err != nil {
 		log.Fatalf("Remove dir %s error %v", workURL, err)
 	}
-}
-
-func PathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
 }

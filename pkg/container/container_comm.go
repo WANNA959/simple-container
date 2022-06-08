@@ -55,7 +55,10 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 		//	network.AddNetns(netnsName)
 		//}
 	}
-	scmd := fmt.Sprintf("unshare --ipc --user --uts %s --mount --root /root/cloud/centos/ --pid --mount-proc --fork bash", net)
+	// mount
+	NewWorkSpace(volume, imageName, containerName)
+	mntURL := filepath.Join(MntUrl, containerName)
+	scmd := fmt.Sprintf("unshare --ipc --user --uts %s --mount --root %s --pid --mount-proc --fork bash", net, mntURL)
 	cmd := exec.Command("bash", "-c", scmd)
 	log.Printf("exec command: %s\n", scmd)
 	if tty {
@@ -63,9 +66,6 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
-
-	// mount
-	NewWorkSpace(volume, imageName, containerName)
 
 	// no blocked(vs Run) return directly
 	if err := cmd.Start(); err != nil {
@@ -138,6 +138,7 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 	cgroupManager.Apply(childPid)
 
 	defer clean(netnsName, containerName)
+	defer DeleteWorkSpace(volume, containerName)
 	cmd.Wait()
 	return nil
 }
