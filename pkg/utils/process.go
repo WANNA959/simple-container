@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 func CheckPidExist(pid int) bool {
@@ -20,4 +21,16 @@ func SetUserNsId(pid int) error {
 	log.Printf("exec command: %s", scmd)
 	err := cmd.Run()
 	return err
+}
+
+func GetChildPids(pid int) int {
+	scmd := fmt.Sprintf("pstree %d -p | awk -F\"[()]\" '{for(i=0;i<=NF;i++)if($i~/[0-9]+/)print $i}'", pid)
+	cmd := exec.Command("bash", "-c", scmd)
+	output, _ := cmd.Output()
+	lines := strings.Split(string(output), "\n")
+	//for i := 0; i < len(lines); i++ {
+	//	fmt.Println(lines[i])
+	//}
+	atoi, _ := strconv.Atoi(lines[2])
+	return atoi
 }

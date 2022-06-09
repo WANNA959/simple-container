@@ -37,7 +37,7 @@ const (
 	StateStop           = "Stopped"
 )
 
-func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerName, imageName, net string) error {
+func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerName, imageName, net, comm string) error {
 	var netnsName string
 	flag := false
 	if net != "" {
@@ -60,7 +60,7 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 	// mount
 	NewWorkSpace(volume, imageName, containerName)
 	mntURL := filepath.Join(MntUrl, containerName)
-	scmd := fmt.Sprintf("unshare --ipc --user --uts %s --mount --root %s --pid --mount-proc --fork bash", net, mntURL)
+	scmd := fmt.Sprintf("unshare --ipc --user --uts %s --mount --root %s --pid --mount-proc --fork %s", net, mntURL, comm)
 	cmd := exec.Command("bash", "-c", scmd)
 	log.Printf("exec command: %s\n", scmd)
 	if tty {
@@ -127,7 +127,7 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 	if containerName == "" {
 		containerName = cid
 	}
-	err := WriteContainerInfo(cid, containerName, imageName, volume, childPid)
+	err := WriteContainerInfo(cid, containerName, imageName, volume, comm, childPid)
 	if err != nil {
 		return err
 	}
@@ -138,6 +138,8 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 	defer cgroupManager.Destroy()
 	cgroupManager.Set(res)
 	cgroupManager.Apply(childPid)
+	cgroupManager.Apply(utils.GetChildPids(childPid))
+	//cgroupManager.Apply(os.Getpid())
 
 	defer clean(netnsName, containerName)
 	defer DeleteWorkSpace(volume, containerName)
@@ -145,7 +147,7 @@ func RunWithCommand(tty bool, res *subsystems.ResourceConfig, volume, containerN
 	return nil
 }
 
-func WriteContainerInfo(cid, containerName, imageName, volume string, pid int) error {
+func WriteContainerInfo(cid, containerName, imageName, volume, comm string, pid int) error {
 	createTime := time.Now().UTC().Add(8 * time.Hour).Format("2006-01-02 15:04:05")
 
 	if containerName == "" {
@@ -156,7 +158,7 @@ func WriteContainerInfo(cid, containerName, imageName, volume string, pid int) e
 		Pid:         strconv.Itoa(pid),
 		Image:       imageName,
 		Name:        containerName,
-		Command:     "unshare",
+		Command:     comm,
 		Volume:      volume,
 		CreatedTime: createTime,
 		Status:      StateRunning,

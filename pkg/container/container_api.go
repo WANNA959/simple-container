@@ -14,7 +14,7 @@ import (
 	"syscall"
 )
 
-func Run(tty bool, cmdArrays []string, res *subsystems.ResourceConfig, volume, containerName, imageName, net string) error {
+func Run(tty bool, cmdArrays []string, res *subsystems.ResourceConfig, volume, containerName, imageName, net, comm string) error {
 	cid := strings.ReplaceAll(uuid.NewV4().String(), "-", "")[:8]
 	if containerName == "" {
 		containerName = cid
@@ -87,7 +87,7 @@ func Run(tty bool, cmdArrays []string, res *subsystems.ResourceConfig, volume, c
 		}
 	}
 
-	err := WriteContainerInfo(cid, containerName, imageName, volume, childPid)
+	err := WriteContainerInfo(cid, containerName, imageName, volume, comm, childPid)
 	if err != nil {
 		return err
 	}

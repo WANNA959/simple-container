@@ -13,7 +13,7 @@ import (
 func NewListCommand() *cli.Command {
 	return &cli.Command{
 		Name:      "ps",
-		Usage:     "connect to host bridge",
+		Usage:     "list info of all containers",
 		UsageText: "scadm [global options] ps",
 		Action:    listContainer,
 	}
